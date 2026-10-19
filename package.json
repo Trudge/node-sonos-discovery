@@ -12,6 +12,7 @@
     "xml-flow": "1.0.2"
   },
   "devDependencies": {
+    "@types/node": "^26.6.5",
     "chai": "*",
     "jscs": "^3.0.7",
     "jshint": "~2.8.0",
@@ -20,15 +21,22 @@
     "rewire": "^2.5.1",
     "sinon": "^1.17.2",
     "sinon-as-promised": "^4.0.0",
-    "sinon-chai": "^2.8.0"
+    "sinon-chai": "^2.8.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   },
   "engines": {
-    "node": ">=4 <23"
+    "node": ">=20 <23"
   },
   "main": "lib/SonosSystem.js",
   "scripts": {
     "jscs": "jscs lib test",
     "mocha": "mocha test/unit --recursive",
-    "test": "npm run -s jscs && npm run -s mocha"
-  }
+    "test": "npm run build && mocha test/unit --recursive",
+    "build": "rm -rf lib && tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": [
+    "lib"
+  ]
 }
