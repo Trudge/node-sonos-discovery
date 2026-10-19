@@ -7,10 +7,10 @@ interface Service {
   type: number;
 }
 
-function parseServices(servicesXML: any): Promise<Record<string, Service>> {
+function parseServices(this: any, servicesXML: any): Promise<Record<string, Service>> {
   const services: Record<string, Service> = {};
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve: any, reject: any) => {
     const stream = streamer(servicesXML.availableservicedescriptorlist);
     const sax = flow(stream, { preserveMarkup: flow.NEVER });
 

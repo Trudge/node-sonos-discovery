@@ -2,7 +2,7 @@
 const soap = require('../../helpers/soap');
 const TYPE = soap.TYPE;
 
-function subDisable() {
+function subDisable(this: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/RenderingControl/Control`,
     TYPE.SetEQ,

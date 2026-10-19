@@ -8,22 +8,22 @@ const LOG_LEVEL: Record<string, number> = Object.freeze({
   ERROR: 50
 });
 
-function isValidLevel(level: string): boolean {
+function isValidLevel(this: any, level: string): boolean {
   const configuredLogLevel = process.env.NODE_LOG_LEVEL || 'info';
   return LOG_LEVEL[level] >= LOG_LEVEL[configuredLogLevel.toUpperCase()];
 }
 
-function log(level: string, ...args: any[]): void {
+function log(this: any, level: string, ...args: any[]): void {
   if (!isValidLevel(level)) return;
 
-  const errors = args.filter((x) => x instanceof Error);
-  const objects = args.filter((x) => !(x instanceof Error) && x instanceof Object);
-  const message = args.filter((x) => !(x instanceof Object)).join(' ');
+  const errors = args.filter((x: any) => x instanceof Error);
+  const objects = args.filter((x: any) => !(x instanceof Error) && x instanceof Object);
+  const message = args.filter((x: any) => !(x instanceof Object)).join(' ');
   const output = [new Date().toISOString(), level, message];
 
   console.log(output.join(' '));
-  errors.forEach((x) => console.log('  ' + (x as Error).stack));
-  objects.forEach((x) => console.log('  ' + util.inspect(x)));
+  errors.forEach((x: any) => console.log('  ' + (x as Error).stack));
+  objects.forEach((x: any) => console.log('  ' + util.inspect(x)));
 }
 
 const logger = {

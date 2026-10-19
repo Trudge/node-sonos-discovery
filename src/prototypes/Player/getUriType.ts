@@ -1,7 +1,7 @@
 'use strict';
 const URI_TYPE = require('../../types/uri-type');
 
-function isRadio(uri) {
+function isRadio(this: any, uri: any) {
   return uri.startsWith('x-sonosapi-stream:') ||
     uri.startsWith('x-sonosapi-radio:') ||
     uri.startsWith('pndrradio:') ||
@@ -10,12 +10,12 @@ function isRadio(uri) {
     uri.startsWith('x-rincon-mp3radio:');
 }
 
-function isLineIn(uri) {
+function isLineIn(this: any, uri: any) {
   return uri.startsWith('x-rincon-stream:') ||
     uri.startsWith('x-sonos-htastream:');
 }
 
-function getUriType(uri) {
+function getUriType(this: any, uri: any) {
   return isRadio(uri) ? URI_TYPE.RADIO : isLineIn(uri) ? URI_TYPE.LINE_IN : URI_TYPE.TRACK;
 }
 

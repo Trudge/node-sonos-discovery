@@ -5,7 +5,7 @@ const endpoints = {
   track: '/v1/tracks/'
 };
 
-function parseUri(uri) {
+function parseUri(this: any, uri: any) {
   // x-sonos-spotify:spotify%3atrack%3a3WKg25vrbjJlkhsgl2W4p3?sid=9&flags=8224&sn=9
   let id;
 
@@ -21,7 +21,7 @@ function parseUri(uri) {
 
 }
 
-function tryGetHighResArt(uri) {
+function tryGetHighResArt(this: any, uri: any) {
   let trackInfo = parseUri(uri);
 
   let apiUrl = [apiBaseEndpoint, endpoints.track, trackInfo.id].join('');
@@ -30,12 +30,12 @@ function tryGetHighResArt(uri) {
     uri: apiUrl,
     type: 'json'
   })
-    .then((response) => {
+    .then((response: any) => {
       return response.album.images.length ? response.album.images[0].url : null;
     });
 }
 
-module.exports = function (services) {
+module.exports = function (services: any) {
   // services[9] = {
   //   tryGetHighResArt
   // };

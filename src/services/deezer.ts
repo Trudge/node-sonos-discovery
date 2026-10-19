@@ -6,12 +6,12 @@ const endpoints = {
   track: '/track/'
 };
 
-function parseUri(uri) {
+function parseUri(this: any, uri: any) {
   //x-sonosprog-http:tr-flac%3a3134041.flac?sid=2&flags=8224&sn=7
 
   const uriParts = /x-.+?:.+%3a(\d+)\./.exec(uri);
 
-  let id = uriParts[1];
+  const id = uriParts ? uriParts[1] : undefined;
 
   return {
     id
@@ -19,7 +19,7 @@ function parseUri(uri) {
 
 }
 
-function tryGetHighResArt(uri) {
+function tryGetHighResArt(this: any, uri: any) {
   let trackInfo = parseUri(uri);
 
   let apiUrl = [apiBaseEndpoint, endpoints.track, trackInfo.id].join('');
@@ -28,12 +28,12 @@ function tryGetHighResArt(uri) {
     uri: apiUrl,
     type: 'json'
   })
-    .then((response) => {
+    .then((response: any) => {
       return response.album.cover_big; // jscs:ignore requireCamelCaseOrUpperCaseIdentifiers
     });
 }
 
-module.exports = function (services) {
+module.exports = function (services: any) {
   services[2] = {
     tryGetHighResArt
   };

@@ -1,6 +1,6 @@
 'use strict';
 
-function getPlaylists() {
+function getPlaylists(this: any) {
   return this.getAnyPlayer().browseAll('SQ:');
 }
 

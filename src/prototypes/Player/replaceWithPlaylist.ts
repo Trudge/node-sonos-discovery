@@ -1,14 +1,14 @@
 'use strict';
 const logger = require('../../helpers/logger');
 
-function replaceWithPlaylist(playlistName) {
+function replaceWithPlaylist(this: any, playlistName: any) {
   logger.debug(`replacing with playlist ${playlistName}`);
   return this.system.getPlaylists()
-    .then((playlists) => {
-      logger.debug(`found playlists`, playlists.map(x => x.title));
-      return playlists.find((list) => list.title.toLowerCase() === playlistName.toLowerCase());
+    .then((playlists: any) => {
+      logger.debug(`found playlists`, playlists.map((x: any) => x.title));
+      return playlists.find((list: any) => list.title.toLowerCase() === playlistName.toLowerCase());
     })
-    .then((playlist) => {
+    .then((playlist: any) => {
       if (!playlist) {
         throw new Error('Playlist not found');
       }
@@ -22,7 +22,7 @@ function replaceWithPlaylist(playlistName) {
           return { uri: `x-rincon-queue:${this.uuid}#0` };
         });
     })
-    .then((playlist) => {
+    .then((playlist: any) => {
       logger.debug(`setting AVTransport to ${playlist.uri} `);
       return this.setAVTransport(playlist.uri, '');
     });

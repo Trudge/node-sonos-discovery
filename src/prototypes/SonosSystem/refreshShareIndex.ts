@@ -1,6 +1,6 @@
 'use strict';
 
-function refreshShareIndex() {
+function refreshShareIndex(this: any) {
   let player = this.getAnyPlayer();
   return player.refreshShareIndex();
 }

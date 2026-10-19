@@ -2,7 +2,7 @@
 const soap = require('../../helpers/soap');
 const TYPE = soap.TYPE;
 
-function subCrossover(value) {
+function subCrossover(this: any, value: any) {
   if (value < 40 || value > 200) {
     return Promise.reject(new Error('You shouldn\'t use unreasonable values, you risk damaging the SUB'));
   }

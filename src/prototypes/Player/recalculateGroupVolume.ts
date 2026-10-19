@@ -1,16 +1,16 @@
 'use strict';
-function recalculateGroupVolume() {
-  const zone = this.system.zones.find(zone => zone.uuid === this.uuid);
+function recalculateGroupVolume(this: any) {
+  const zone = this.system.zones.find((zone: any) => zone.uuid === this.uuid);
   const relevantMembers = zone.members
-    .filter(player => !player.outputFixed)
-    .map(player => player.state.volume);
+    .filter((player: any) => !player.outputFixed)
+    .map((player: any) => player.state.volume);
 
   if (relevantMembers.length === 0) {
     return;
   }
 
   const totalVolume = relevantMembers
-    .reduce((prev, current) => {
+    .reduce((prev: any, current: any) => {
       return prev + current;
     });
 

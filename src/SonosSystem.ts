@@ -17,7 +17,7 @@ const RETRY_BASE_DELAY = 1000;
 const RETRY_MAX_DELAY = 60000;
 const DISCOVERY_RESTART_DELAY = 30000;
 
-function isVisible(member) {
+function isVisible(this: any, member: any) {
   // If a member has the attribute invisible == 1, it is either a
   // BRIDGE, BOOST, SUB or a right channel stereo pair
   if (Array.isArray(member)) {
@@ -27,22 +27,22 @@ function isVisible(member) {
   return member.invisible !== '1';
 }
 
-function SonosSystem(settings) {
+function SonosSystem(this: any, settings: any) {
   settings = Object.assign({}, settings);
-  let _this = this;
-  let listener;
-  let playerCache = {};
-  let subCache = {};
+  const _this: any = this;
+  let listener: any;
+  let playerCache: Record<string, any> = {};
+  let subCache: Record<string, any> = {};
   let initFailures = 0;
-  let discoveryRestartTimer;
+  let discoveryRestartTimer: any;
   restart();
 
-  function clearDiscoveryRestart() {
+  function clearDiscoveryRestart(this: any) {
     clearTimeout(discoveryRestartTimer);
     discoveryRestartTimer = undefined;
   }
 
-  function scheduleDiscoveryRestart() {
+  function scheduleDiscoveryRestart(this: any) {
     if (discoveryRestartTimer) {
       return;
     }
@@ -64,18 +64,18 @@ function SonosSystem(settings) {
 
   _this.cancelDiscoveryRestart = clearDiscoveryRestart;
 
-  function queueChange(uuid) {
+  function queueChange(this: any, uuid: any) {
     let player = _this.getPlayerByUUID(uuid);
     if (player && player.uuid) {
       _this.emit('queue-change', player);
     }
   }
 
-  function listChange(type) {
+  function listChange(this: any, type: any) {
     _this.emit('list-change', type);
   }
 
-  function tryGet(cache, Type, member) {
+  function tryGet(this: any, cache: any, Type: any, member: any) {
     if (cache[member.uuid]) {
       return cache[member.uuid];
     }
@@ -88,7 +88,7 @@ function SonosSystem(settings) {
     return cache[member.uuid];
   }
 
-  function getPlayers(members) {
+  function getPlayers(this: any, members: any) {
     if (members instanceof Array === false) {
       // single item
       const player = tryGet(playerCache, Player, members);
@@ -97,30 +97,30 @@ function SonosSystem(settings) {
 
     // Find normal players
     let players = members
-      .filter((member) => {
+      .filter((member: any) => {
         return isVisible(member);
       })
-      .map((member) => {
+      .map((member: any) => {
         return tryGet(playerCache, Player, member);
       });
 
     return players;
   }
 
-  function topologyChange(uuid, topology) {
-    let players = [];
+  function topologyChange(this: any, uuid: any, topology: any) {
+    let players: any[] = [];
 
     let zones = topology
-      .filter((zone) => {
+      .filter((zone: any) => {
         return isVisible(zone.zonegroupmember);
       })
-      .map((zone) => {
+      .map((zone: any) => {
         let members = getPlayers(zone.zonegroupmember);
         Array.prototype.push.apply(players, members);
 
         // fix coordinator for members
         let coordinator = playerCache[zone.$attrs.coordinator];
-        members.forEach((member) => {
+        members.forEach((member: any) => {
           member.coordinator = coordinator;
         });
 
@@ -158,7 +158,7 @@ function SonosSystem(settings) {
     soap.invoke(`${anyPlayer.baseUrl}/MusicServices/Control`, soap.TYPE.ListAvailableServices)
       .then(soap.parse)
       .then(parseServices)
-      .then((availableServices) => {
+      .then((availableServices: any) => {
         if (!Object.keys(_this.availableServices).length) {
           setImmediate(() => _this.emit('initialized'));
         }
@@ -167,7 +167,7 @@ function SonosSystem(settings) {
       });
   }
 
-  function init(info) {
+  function init(this: any, info: any) {
     if (settings.household && info.household !== settings.household) {
       ssdp.once('found', init);
       return;
@@ -180,23 +180,23 @@ function SonosSystem(settings) {
       method: 'GET',
       type: 'stream'
     })
-      .then((res) => {
+      .then((res: any) => {
         initFailures = 0;
         _this.localEndpoint = res.socket.address().address;
         listener = new NotificationListener(_this.localEndpoint);
         listener.on('queue-change', queueChange);
         listener.on('list-change', listChange);
         listener.on('topology', topologyChange);
-        listener.on('listening', (port) => {
+        listener.on('listening', (port: any) => {
           logger.debug(`Subscribing to player ${info.ip} for topology events`);
           _this.subscriber = new Subscriber(`http://${info.ip}:1400/ZoneGroupTopology/Event`, listener.endpoint());
-          _this.subscriber.once('dead', (err) => {
+          _this.subscriber.once('dead', (err: any) => {
             logger.error(err);
             restart();
           });
         });
       })
-      .catch((e) => {
+      .catch((e: any) => {
         initFailures += 1;
         const delay = Math.min(RETRY_BASE_DELAY * Math.pow(2, initFailures - 1), RETRY_MAX_DELAY);
         console.error(e);
@@ -210,7 +210,7 @@ function SonosSystem(settings) {
       });
   }
 
-  function restart() {
+  function restart(this: any) {
     clearDiscoveryRestart();
     ssdp.stop();
 
@@ -239,30 +239,30 @@ function SonosSystem(settings) {
 // This needs to be before all prototype methods!
 util.inherits(SonosSystem, EventEmitter);
 
-SonosSystem.prototype.getPlayer = function getPlayer(name) {
-  return this.players.find((player) => player.roomName.toLowerCase() === name.toLowerCase());
+SonosSystem.prototype.getPlayer = function getPlayer(this: any, name: any) {
+  return this.players.find((player: any) => player.roomName.toLowerCase() === name.toLowerCase());
 };
 
-SonosSystem.prototype.getPlayerByUUID = function getPlayerByUUID(uuid) {
-  return this.players.find((player) => player.uuid === uuid);
+SonosSystem.prototype.getPlayerByUUID = function getPlayerByUUID(this: any, uuid: any) {
+  return this.players.find((player: any) => player.uuid === uuid);
 };
 
 let playerIndex = 0;
 
-SonosSystem.prototype.getAnyPlayer = function getAnyPlayer() {
+SonosSystem.prototype.getAnyPlayer = function getAnyPlayer(this: any) {
   return this.players[playerIndex++ % this.players.length];
 };
 
-SonosSystem.prototype.dispose = function dispose() {
+SonosSystem.prototype.dispose = function dispose(this: any) {
   if (this.cancelDiscoveryRestart) this.cancelDiscoveryRestart();
   if (this.subscriber && this.subscriber.dispose) this.subscriber.dispose();
-  this.players.forEach(player => {
+  this.players.forEach((player: any) => {
     if (player.sub && player.sub.dispose) player.sub.dispose();
     if (player.dispose) player.dispose();
   });
 };
 
-SonosSystem.prototype.getServiceId = function getServiceId(serviceName) {
+SonosSystem.prototype.getServiceId = function getServiceId(this: any, serviceName: any) {
   if (!this.availableServices[serviceName]) {
     throw new UnknownServiceError(serviceName);
   }
@@ -270,7 +270,7 @@ SonosSystem.prototype.getServiceId = function getServiceId(serviceName) {
   return this.availableServices[serviceName].id;
 };
 
-SonosSystem.prototype.getServiceType = function getServiceType(serviceName) {
+SonosSystem.prototype.getServiceType = function getServiceType(this: any, serviceName: any) {
   if (!this.availableServices[serviceName]) {
     throw new UnknownServiceError(serviceName);
   }
@@ -278,7 +278,7 @@ SonosSystem.prototype.getServiceType = function getServiceType(serviceName) {
   return this.availableServices[serviceName].type;
 };
 
-requireDir(path.join(__dirname, '/prototypes/SonosSystem'), (proto) => {
+requireDir(path.join(__dirname, '/prototypes/SonosSystem'), (proto: any) => {
   SonosSystem.prototype[proto.name] = proto;
 });
 

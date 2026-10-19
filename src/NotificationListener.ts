@@ -7,11 +7,11 @@ const Readable = require('stream').Readable;
 const logger = require('./helpers/logger');
 
 const LIST_TYPE = require('./types/list-type');
-let lastUpdate = {};
+const lastUpdate: Record<string, any> = {};
 
-function createStream(str) {
+function createStream(this: any, str: any) {
   let stream = new Readable();
-  stream._read = function noop() {
+  stream._read = function noop(this: any) {
   };
 
   stream.push(str);
@@ -19,8 +19,8 @@ function createStream(str) {
   return stream;
 }
 
-function parseTopology(text) {
-  return new Promise((resolve, reject) => {
+function parseTopology(this: any, text: any) {
+  return new Promise((resolve: any, reject: any) => {
 
     let sax = flow(createStream(text), {
       preserveMarkup: flow.NEVER,
@@ -28,11 +28,11 @@ function parseTopology(text) {
     }
     );
 
-    let zoneGroups = [];
+    let zoneGroups: any[] = [];
 
-    sax.on('tag:zonegroup', (group) => {
+    sax.on('tag:zonegroup', (group: any) => {
       if (Array.isArray(group.zonegroupmember)) {
-        group.zonegroupmember = group.zonegroupmember.map(member => (member.$attrs || member));
+        group.zonegroupmember = group.zonegroupmember.map((member: any) => (member.$attrs || member));
       } else if (group.zonegroupmember.$attrs) {
         group.zonegroupmember = group.zonegroupmember.$attrs;
       }
@@ -44,30 +44,30 @@ function parseTopology(text) {
       resolve(zoneGroups);
     });
 
-    sax.on('error', (e) => {
+    sax.on('error', (e: any) => {
       reject(e);
     });
   });
 }
 
-function parseLastChange(text) {
-  return new Promise((resolve, reject) => {
+function parseLastChange(this: any, text: any) {
+  return new Promise((resolve: any, reject: any) => {
 
     let sax = flow(createStream(text));
 
-    sax.on('tag:instanceid', (lastChange) => {
+    sax.on('tag:instanceid', (lastChange: any) => {
       resolve(lastChange);
     });
 
-    sax.on('error', (e) => {
+    sax.on('error', (e: any) => {
       reject(e);
     });
   });
 }
 
-function NotificationListener(localEndpoint) {
-  let _this = this;
-  let server;
+function NotificationListener(this: any, localEndpoint: any) {
+  const _this: any = this;
+  let server: any;
   let listeningPort = 3500;
 
   this.endpoint = () => {
@@ -88,7 +88,7 @@ function NotificationListener(localEndpoint) {
     server = undefined;
   };
 
-  function init() {
+  function init(this: any) {
     server = http.createServer(notificationHandler);
     server.listen(listeningPort);
 
@@ -96,14 +96,14 @@ function NotificationListener(localEndpoint) {
       _this.emit('listening', listeningPort);
     });
 
-    server.on('error', (e) => {
+    server.on('error', (e: any) => {
       if (e.code === 'EADDRINUSE') {
         server.listen(++listeningPort);
       }
     });
   }
 
-  function notificationHandler(req, res) {
+  function notificationHandler(this: any, req: any, res: any) {
     req.on('end', () => {
       res.writeHead(200, 'OK');
       res.end();
@@ -124,28 +124,28 @@ function NotificationListener(localEndpoint) {
 
     let sax = flow(req, { useArrays: flow.NEVER });
 
-    sax.on('tag:zonegroupstate', (property) => {
+    sax.on('tag:zonegroupstate', (property: any) => {
       logger.trace(property.$text);
       parseTopology(property.$text)
-        .then((topology) => {
+        .then((topology: any) => {
           _this.emit('topology', uuid, topology);
         });
     });
 
-    sax.on('tag:lastchange', (property) => {
+    sax.on('tag:lastchange', (property: any) => {
       logger.trace(property.$text);
       parseLastChange(property.$text)
-        .then((lastChange) => {
+        .then((lastChange: any) => {
           _this.emit('last-change', uuid, lastChange);
         });
     });
 
-    sax.on('tag:groupmute', (property) => {
+    sax.on('tag:groupmute', (property: any) => {
       logger.trace(property.$text);
       _this.emit('group-mute', uuid, property.$text);
     });
 
-    sax.on('tag:savedqueuesupdateid', (property) => {
+    sax.on('tag:savedqueuesupdateid', (property: any) => {
       logger.trace('tag:savedqueuesupdateid', property.$text);
       if (lastUpdate[LIST_TYPE.SAVED_QUEUES] !== property.$text) {
         lastUpdate[LIST_TYPE.SAVED_QUEUES] = property.$text;
@@ -153,7 +153,7 @@ function NotificationListener(localEndpoint) {
       }
     });
 
-    sax.on('tag:favoritesupdateid', (property) => {
+    sax.on('tag:favoritesupdateid', (property: any) => {
       logger.trace('tag:favoritesupdateid', property.$text);
       if (lastUpdate[LIST_TYPE.FAVORITES] !== property.$text) {
         lastUpdate[LIST_TYPE.FAVORITES] = property.$text;
@@ -161,7 +161,7 @@ function NotificationListener(localEndpoint) {
       }
     });
 
-    sax.on('tag:containerupdateids', (property) => {
+    sax.on('tag:containerupdateids', (property: any) => {
       logger.trace('tag:containerupdateids', property.$text);
       if (property.$text && property.$text.indexOf('Q:0') !== -1) {
         _this.emit('queue-change', uuid);

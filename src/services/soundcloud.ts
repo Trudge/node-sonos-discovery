@@ -5,7 +5,7 @@ const apiBaseEndpoint = 'http://api.soundcloud.com';
 let settings: any = {};
 
 try {
-  settings = require.main.require('./settings.json');
+  settings = require.main?.require('./settings.json');
 } catch (e) {
 }
 
@@ -15,7 +15,7 @@ const endpoints = {
   track: '/tracks/'
 };
 
-function parseUri(uri) {
+function parseUri(this: any, uri: any) {
   // x-sonos-http:track%3a232202756.mp3?sid=160&flags=8224&sn=10
   let id;
   const uriParts = /x-sonos-http:track%3a(\d+)\./.exec(uri);
@@ -29,7 +29,7 @@ function parseUri(uri) {
 
 }
 
-function tryGetHighResArt(uri) {
+function tryGetHighResArt(this: any, uri: any) {
   let trackInfo = parseUri(uri);
 
   let apiUrl = [
@@ -44,7 +44,7 @@ function tryGetHighResArt(uri) {
     uri: apiUrl,
     type: 'json'
   })
-    .then((response) => {
+    .then((response: any) => {
       let artwork;
 
       // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
@@ -60,7 +60,7 @@ function tryGetHighResArt(uri) {
     });
 }
 
-module.exports = function (services) {
+module.exports = function (services: any) {
   services[160] = {
     tryGetHighResArt
   };

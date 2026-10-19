@@ -1,9 +1,9 @@
 import stream = require('stream');
 
-function streamer(str: string): stream.Readable {
+function streamer(this: any, str: string): stream.Readable {
   const mockedStream = new stream.Readable();
 
-  mockedStream._read = function noop(): void {
+  mockedStream._read = function noop(this: any): void {
     // No-op required by the Readable interface.
   };
 

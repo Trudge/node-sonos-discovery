@@ -1,5 +1,5 @@
 'use strict';
-function setGroupVolume(desiredVolume) {
+function setGroupVolume(this: any, desiredVolume: any) {
   const currentGroupVolume = this.groupState.volume;
   let deltaVolume;
 
@@ -12,9 +12,9 @@ function setGroupVolume(desiredVolume) {
     deltaVolume = desiredVolume - currentGroupVolume;
   }
 
-  const zone = this.system.zones.find(zone => zone.uuid === this.uuid);
+  const zone = this.system.zones.find((zone: any) => zone.uuid === this.uuid);
 
-  const promises = zone.members.map((player) => {
+  const promises = zone.members.map((player: any) => {
     let targetVolume;
     if (desiredVolume < 1) {
       targetVolume = 0;

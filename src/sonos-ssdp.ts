@@ -4,7 +4,7 @@ const EventEmitter = require('events').EventEmitter;
 const util = require('util');
 const logger = require('./helpers/logger');
 
-function SSDP() {
+function SSDP(this: any) {
   const SONOS_PLAYER_UPNP_URN = 'urn:schemas-upnp-org:device:ZonePlayer:1';
   const PLAYER_SEARCH = Buffer.from(['M-SEARCH * HTTP/1.1',
     'HOST: 239.255.255.250:1900',
@@ -12,15 +12,15 @@ function SSDP() {
     'MX: 1',
     'ST: ' + SONOS_PLAYER_UPNP_URN].join('\r\n'));
 
-  let socket;
+  let socket: any;
   let _this = this;
-  let scanTimeout;
-  let socketCycleInterval;
+  let scanTimeout: any;
+  let socketCycleInterval: any;
 
   const remoteEndpoints = ['239.255.255.250', '255.255.255.255'];
   let remoteEndpointIndex = 0;
 
-  function receiveHandler(buffer, rinfo) {
+  function receiveHandler(this: any, buffer: any, rinfo: any) {
 
     var response = buffer.toString('ascii');
 
@@ -51,7 +51,7 @@ function SSDP() {
     });
   }
 
-  function sendScan() {
+  function sendScan(this: any) {
     logger.trace('sending M-SEARCH...');
 
     // Alternate between 239.255.255.250 and 255.255.255.255 to increase discoverability in complex environment
@@ -60,7 +60,7 @@ function SSDP() {
     scanTimeout = setTimeout(sendScan, 1000);
   }
 
-  function start() {
+  function start(this: any) {
     createSocket(() => {
       sendScan();
     });
@@ -70,7 +70,7 @@ function SSDP() {
     }, 5000);
   }
 
-  function createSocket(callback?: () => void) {
+  function createSocket(this: any, callback?: () => void) {
     if (socket) {
       socket.close();
     }
@@ -88,7 +88,7 @@ function SSDP() {
     });
   }
 
-  function stop() {
+  function stop(this: any) {
     if (!socket) return;
     socket.close();
     socket = null;
@@ -102,4 +102,4 @@ function SSDP() {
 
 util.inherits(SSDP, EventEmitter);
 
-module.exports = new SSDP();
+module.exports = new (SSDP as any)();

@@ -1,7 +1,7 @@
 'use strict';
 const logger = require('../../helpers/logger');
 
-function isRadio(uri) {
+function isRadio(this: any, uri: any) {
   return uri.startsWith('x-sonosapi-stream:') ||
     uri.startsWith('x-sonosapi-radio:') ||
     uri.startsWith('pndrradio:') ||
@@ -9,14 +9,14 @@ function isRadio(uri) {
     uri.startsWith('x-sonosprog-http:');
 }
 
-function replaceWithFavorite(favoriteName) {
+function replaceWithFavorite(this: any, favoriteName: any) {
   logger.debug(`replacing with favorite ${favoriteName}`);
   return this.system.getFavorites()
-    .then((favorites) => {
-      logger.debug(`found favorites`, favorites.map(x => x.title));
-      return favorites.find((fav) => fav.title.toLowerCase() === favoriteName.toLowerCase() || fav.uri.toLowerCase() === favoriteName.toLowerCase());
+    .then((favorites: any) => {
+      logger.debug(`found favorites`, favorites.map((x: any) => x.title));
+      return favorites.find((fav: any) => fav.title.toLowerCase() === favoriteName.toLowerCase() || fav.uri.toLowerCase() === favoriteName.toLowerCase());
     })
-    .then((favorite) => {
+    .then((favorite: any) => {
       if (!favorite) {
         throw new Error('Favorite not found');
       }
@@ -35,7 +35,7 @@ function replaceWithFavorite(favoriteName) {
           return { uri: `x-rincon-queue:${this.uuid}#0` };
         });
     })
-    .then((favorite) => {
+    .then((favorite: any) => {
       logger.debug(`setting AVTransport to ${favorite.uri} with metadata ${favorite.metadata}`);
       if (this.avTransportUri === favorite.uri) {
         logger.debug(`already has ${favorite.uri} as AVTransport, skipping`);

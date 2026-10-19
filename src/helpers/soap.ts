@@ -68,11 +68,11 @@ const TEMPLATES: Record<string, string> = Object.freeze({
   [TYPE.SetBass]: '<u:SetBass xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1"><InstanceID>0</InstanceID><DesiredBass>{level}</DesiredBass></u:SetBass>',
 });
 
-function substitute(soapAction: string, substitutions?: Record<string, string>): string {
+function substitute(this: any, soapAction: string, substitutions?: Record<string, string>): string {
   let template = TEMPLATES[soapAction];
   let body = template;
   if (substitutions) {
-    body = template.replace(/{([a-z]+)}/gi, function (match, group1) {
+    body = template.replace(/{([a-z]+)}/gi, function (match: any, group1: any) {
       return (substitutions.hasOwnProperty(group1)) ? substitutions[group1] : match;
     });
   }
@@ -81,7 +81,7 @@ function substitute(soapAction: string, substitutions?: Record<string, string>):
 }
 /* jshint +W101 */
 
-function invoke(url: string, action: string, values?: Record<string, string>): Promise<any> {
+function invoke(this: any, url: string, action: string, values?: Record<string, string>): Promise<any> {
   let soapBody: string | undefined;
   try {
     soapBody = substitute(action, values);
@@ -113,8 +113,8 @@ function invoke(url: string, action: string, values?: Record<string, string>): P
     });
 }
 
-function parse(stream: any): Promise<any> {
-  return new Promise((resolve, reject) => {
+function parse(this: any, stream: any): Promise<any> {
+  return new Promise((resolve: any, reject: any) => {
     if (!stream) reject(new ArgumentError(`Expected a stream or string as argument, got ${stream}`));
 
     let returnResult: any = {};

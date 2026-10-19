@@ -2,7 +2,7 @@
 const soap = require('../../helpers/soap');
 const TYPE = soap.TYPE;
 
-function subGain(value) {
+function subGain(this: any, value: any) {
   if (value < -15 || value > 15) {
     return Promise.reject(new Error('Valid range is between -15 and 15'));
   }

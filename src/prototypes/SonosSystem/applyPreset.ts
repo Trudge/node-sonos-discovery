@@ -1,10 +1,10 @@
 'use strict';
 const logger = require('../../helpers/logger');
 
-function setVolume(system, playerPresets) {
+function setVolume(this: any, system: any, playerPresets: any) {
   let initialPromise = Promise.resolve();
 
-  return playerPresets.reduce((promise, playerInfo) => {
+  return playerPresets.reduce((promise: any, playerInfo: any) => {
     let player = system.getPlayer(playerInfo.roomName);
     if (!player) {
       return promise;
@@ -26,30 +26,30 @@ function setVolume(system, playerPresets) {
   }, initialPromise);
 }
 
-function pauseOthers(system, presetPlayers) {
-  const presetPlayerUuids = presetPlayers.map(player => player.uuid);
+function pauseOthers(this: any, system: any, presetPlayers: any) {
+  const presetPlayerUuids = presetPlayers.map((player: any) => player.uuid);
 
   const initialPromise = Promise.resolve();
   return system.zones
-    .filter(zone => presetPlayerUuids.includes(zone.uuid) === false)
-    .reduce((promise, zone) => {
+    .filter((zone: any) => presetPlayerUuids.includes(zone.uuid) === false)
+    .reduce((promise: any, zone: any) => {
       return promise.then(() => {
         logger.debug(`pausing ${zone.coordinator.roomName}`);
         return zone.coordinator.pause()
-          .catch((err) => {
+          .catch((err: any) => {
           });
       });
     }, initialPromise);
 }
 
-function groupWithCoordinator(players) {
+function groupWithCoordinator(this: any, players: any) {
   let initialPromise = Promise.resolve();
   let coordinator = players[0];
   let groupingUri = `x-rincon:${coordinator.uuid}`;
 
   // Skip first player since it is coordinator
   return players.slice(1)
-    .reduce((promise, player) => {
+    .reduce((promise: any, player: any) => {
 
       if (player.avTransportUri === groupingUri) {
         logger.debug(`skipping grouping for ${player.roomName} because it is already grouped with coordinator`);
@@ -61,34 +61,34 @@ function groupWithCoordinator(players) {
     }, initialPromise);
 }
 
-function ungroupFromCoordinator(system, players) {
+function ungroupFromCoordinator(this: any, system: any, players: any) {
   // Find zone
   let coordinator = players[0];
-  let zone = system.zones.find((x) => {
+  let zone = system.zones.find((x: any) => {
     return x.uuid === coordinator.uuid;
   });
 
-  let playerNames = players.map((player) => {
+  let playerNames = players.map((player: any) => {
     return player.roomName;
   });
-  let superfluousPlayers = zone.members.filter((member) => {
+  let superfluousPlayers = zone.members.filter((member: any) => {
     return playerNames.indexOf(member.roomName) === -1;
   });
 
-  return superfluousPlayers.reduce((promise, player) => {
+  return superfluousPlayers.reduce((promise: any, player: any) => {
     logger.debug(`ungrouping ${player.roomName} from coordinator ${coordinator.roomName}`);
     return promise.then(() => player.becomeCoordinatorOfStandaloneGroup());
   }, Promise.resolve());
 
 }
 
-function applyPreset(preset) {
+function applyPreset(this: any, preset: any) {
   let promise = Promise.resolve();
-  let players;
-  let coordinator;
+  let players: any;
+  let coordinator: any;
 
   promise = promise.then(() => {
-    players = preset.players.map(playerInfo => this.getPlayer(playerInfo.roomName));
+    players = preset.players.map((playerInfo: any) => this.getPlayer(playerInfo.roomName));
   });
 
   promise = promise.then(() => {
@@ -131,17 +131,17 @@ function applyPreset(preset) {
 
   if (preset.playMode) {
     promise = promise.then(() => coordinator.setPlayMode(preset.playMode)
-      .catch(err => logger.warn(err, 'setPlayMode failed')));
+      .catch((err: any) => logger.warn(err, 'setPlayMode failed')));
   }
 
   if (preset.trackNo) {
     promise = promise.then(() => coordinator.trackSeek(preset.trackNo)
-      .catch(err => logger.warn(err, 'trackSeek failed')));
+      .catch((err: any) => logger.warn(err, 'trackSeek failed')));
   }
 
   if (preset.elapsedTime) {
     promise = promise.then(() => coordinator.timeSeek(preset.elapsedTime)
-      .catch(err => logger.warn(err, 'timeSeek failed')));
+      .catch((err: any) => logger.warn(err, 'timeSeek failed')));
   }
 
   if (preset.sleep) {

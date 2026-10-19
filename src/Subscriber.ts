@@ -7,10 +7,10 @@ const DEFAULT_RETRY_INTERVAL = 5000;
 const DEFAULT_SUBSCRIPTION_INTERVAL = 600;
 const RETRIES_BEFORE_CONSIDERED_DEAD = 5;
 
-function Subscriber(subscribeUrl, notificationUrl, _subscriptionInterval, _retryInterval) {
-  const _this = this;
-  let sid;
-  let timer;
+function Subscriber(this: any, subscribeUrl: any, notificationUrl: any, _subscriptionInterval: any, _retryInterval: any) {
+  const _this: any = this;
+  let sid: any;
+  let timer: any;
   let errorCount = 0;
   let disposed = false;
 
@@ -18,7 +18,7 @@ function Subscriber(subscribeUrl, notificationUrl, _subscriptionInterval, _retry
   const subscriptionInterval = _subscriptionInterval || DEFAULT_SUBSCRIPTION_INTERVAL;
   const retryInterval = _retryInterval || DEFAULT_RETRY_INTERVAL;
 
-  this.dispose = function dispose() {
+  this.dispose = function dispose(this: any) {
     if (disposed) {
       return;
     }
@@ -39,12 +39,12 @@ function Subscriber(subscribeUrl, notificationUrl, _subscriptionInterval, _retry
       type: 'stream'
     }).then(() => {
       logger.trace('successfully unsubscribed from', subscribeUrl);
-    }).catch((e) => {
+    }).catch((e: any) => {
       logger.error(`unsubscribe from sid ${sid} failed`, e);
     });
   };
 
-  function subscribe() {
+  function subscribe(this: any) {
     clearTimeout(timer);
     const headers: Record<string, string> = {
       TIMEOUT: `Second-${subscriptionInterval}`
@@ -62,7 +62,7 @@ function Subscriber(subscribeUrl, notificationUrl, _subscriptionInterval, _retry
       uri: subscribeUrl,
       method: 'SUBSCRIBE',
       type: 'stream'
-    }).then((res) => {
+    }).then((res: any) => {
       if (disposed) {
         return;
       }
@@ -70,7 +70,7 @@ function Subscriber(subscribeUrl, notificationUrl, _subscriptionInterval, _retry
       sid = res.headers.sid;
       timer = setTimeout(subscribe, subscriptionInterval * 500);
       errorCount = 0;
-    }).catch((e) => {
+    }).catch((e: any) => {
       if (disposed) {
         return;
       }

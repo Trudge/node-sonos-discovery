@@ -3,7 +3,7 @@ const soap = require('../../helpers/soap');
 const POLARITY = require('../../types/sub-polarity');
 const TYPE = soap.TYPE;
 
-function subPolarity(polarity) {
+function subPolarity(this: any, polarity: any) {
   polarity = polarity == POLARITY.INVERSE ? POLARITY.INVERSE : POLARITY.NONE;
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/RenderingControl/Control`,

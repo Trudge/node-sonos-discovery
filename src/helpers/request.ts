@@ -40,11 +40,11 @@ class RequestFailedError extends RequestError {
   }
 }
 
-function request(options: RequestOptions): Promise<any> {
+function request(this: any, options: RequestOptions): Promise<any> {
   const stackHolder: { stack?: string } = {};
   Error.captureStackTrace(stackHolder, request);
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve: any, reject: any) => {
     const uri = url.parse(options.uri);
     const httpModule = uri.protocol === 'https:' ? https : http;
     const defaultPort = uri.protocol === 'https:' ? 443 : 80;
@@ -61,7 +61,7 @@ function request(options: RequestOptions): Promise<any> {
       requestOptions.headers = options.headers;
     }
 
-    const client = httpModule.request(requestOptions, (res) => {
+    const client = httpModule.request(requestOptions, (res: any) => {
       const chunks: Buffer[] = [];
       const statusCode = res.statusCode === undefined ? 200 : res.statusCode;
 

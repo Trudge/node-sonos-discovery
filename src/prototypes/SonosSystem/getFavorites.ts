@@ -1,6 +1,6 @@
 'use strict';
 
-function getFavorites() {
+function getFavorites(this: any) {
   return this.getAnyPlayer().browseAll('FV:2');
 }
 

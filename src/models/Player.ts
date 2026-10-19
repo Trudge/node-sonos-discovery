@@ -19,8 +19,8 @@ const PLAY_MODE = require('../types/play-mode');
 const REPEAT_MODE = require('../types/repeat-mode');
 const URI_TYPE = require('../types/uri-type');
 
-function reversePlayMode() {
-  let lookup = {};
+function reversePlayMode(this: any) {
+  const lookup: Record<string, any> = {};
   for (let key in PLAY_MODE) {
     lookup[PLAY_MODE[key]] = key;
   }
@@ -28,18 +28,18 @@ function reversePlayMode() {
   return lookup;
 }
 
-const PLAY_MODE_LOOKUP = Object.freeze(reversePlayMode());
+const PLAY_MODE_LOOKUP: any = Object.freeze(reversePlayMode());
 
-function getPlayMode(state) {
+function getPlayMode(this: any, state: any) {
   let key = state.shuffle << 1 | (state.repeat === REPEAT_MODE.ONE ? 4 : (state.repeat === REPEAT_MODE.ALL ? 1 : 0));
   return PLAY_MODE_LOOKUP[key];
 }
 
-function clone(obj) {
+function clone(this: any, obj: any) {
   return JSON.parse(JSON.stringify(obj));
 }
 
-function parseTime(formattedTime) {
+function parseTime(this: any, formattedTime: any) {
   if (formattedTime === undefined) {
     return 0;
   }
@@ -54,11 +54,11 @@ function parseTime(formattedTime) {
   return isNaN(timeInSeconds) ? 0 : timeInSeconds;
 }
 
-function zpad(number) {
+function zpad(this: any, number: any) {
   return ('00' + number).substr(-2);
 }
 
-function formatTime(seconds) {
+function formatTime(this: any, seconds: any) {
   var chunks = [];
   var remainingTime = seconds;
 
@@ -79,7 +79,7 @@ function formatTime(seconds) {
   return chunks.join(':');
 }
 
-function deepFreeze(obj) {
+function deepFreeze(this: any, obj: any) {
   const copy = Object.assign({}, obj);
   Object.keys(copy).filter(key => copy[key] && Object.getPrototypeOf(copy[key]) === Object.prototype)
     .forEach(key => copy[key] = deepFreeze(copy[key]));
@@ -87,14 +87,14 @@ function deepFreeze(obj) {
   return Object.freeze(copy);
 }
 
-function parseTrackMetadata(metadata: any, nextTrack?: boolean): Promise<any> {
-  return new Promise((resolve, reject) => {
+function parseTrackMetadata(this: any, metadata: any, nextTrack?: boolean): Promise<any> {
+  return new Promise((resolve: any, reject: any) => {
     let track: any = nextTrack ? clone(EMPTY_STATE.nextTrack) : clone(EMPTY_STATE.currentTrack);
     if (!metadata || !metadata.val) resolve(track);
 
     const sax = flow(streamer(metadata.val));
 
-    sax.on('tag:item', (item) => {
+    sax.on('tag:item', (item: any) => {
       track.uri = item.res && item.res.$text;
       track.trackUri = track.uri;
       track.duration = item.res ? parseTime((item.res.$attrs || item.res).duration) : 0;
@@ -117,15 +117,15 @@ function parseTrackMetadata(metadata: any, nextTrack?: boolean): Promise<any> {
   });
 }
 
-function parseEnqueuedMetadata(metadata: any): Promise<any> {
-  return new Promise((resolve, reject) => {
+function parseEnqueuedMetadata(this: any, metadata: any): Promise<any> {
+  return new Promise((resolve: any, reject: any) => {
     if (!metadata || !metadata.val) resolve({});
 
     const sax = flow(streamer(metadata.val));
 
     const enqueuedMetadata: any = {};
 
-    sax.on('tag:item', (item) => {
+    sax.on('tag:item', (item: any) => {
       enqueuedMetadata.title = item['dc:title'];
       enqueuedMetadata.albumArtURI = item['upnp:albumarturi'];
     });
@@ -139,7 +139,7 @@ function parseEnqueuedMetadata(metadata: any): Promise<any> {
   });
 }
 
-function getState(playerInternal, coordinatorInternal, sub) {
+function getState(this: any, playerInternal: any, coordinatorInternal: any, sub: any) {
   var diff = 0;
   if (coordinatorInternal.playbackState === 'PLAYING')
     diff = Date.now() - coordinatorInternal.stateTime;
@@ -166,8 +166,8 @@ function getState(playerInternal, coordinatorInternal, sub) {
   return deepFreeze(state);
 }
 
-function Player(data, listener, system) {
-  let _this = this;
+function Player(this: any, data: any, listener: any, system: any) {
+  const _this: any = this;
   _this.system = system;
   _this.roomName = data.zonename;
   _this.uuid = data.uuid;
@@ -193,7 +193,7 @@ function Player(data, listener, system) {
     get: () => state
   });
   _this.ownVolumeEvents = [];
-  _this._setVolume = function _setVolume(level) {
+  _this._setVolume = function _setVolume(this: any, level: any) {
     state.volume = level;
   };
 
@@ -216,22 +216,22 @@ function Player(data, listener, system) {
     '/MediaServer/ContentDirectory/Event'
   ];
 
-  let subscriptions = subscribeEndpoints.map((path) => {
+  let subscriptions = subscribeEndpoints.map((path: any) => {
     return new Subscriber(`${_this.baseUrl}${path}`, listener.endpoint());
   });
 
-  _this.dispose = function dispose() {
-    subscriptions.forEach((subscriber) => {
+  _this.dispose = function dispose(this: any) {
+    subscriptions.forEach((subscriber: any) => {
       subscriber.dispose();
     });
   };
 
-  function getPositionInfo() {
+  function getPositionInfo(this: any) {
     return soap.invoke(
       `${_this.baseUrl}/MediaRenderer/AVTransport/Control`,
       TYPE.GetPositionInfo)
       .then(soap.parse)
-      .then(response => {
+      .then((response: any) => {
         // Simplifies testing by not requiring mock data
         if (!response) {
           return;
@@ -241,18 +241,18 @@ function Player(data, listener, system) {
         state.stateTime = Date.now();
 
       })
-      .catch((err) => {
+      .catch((err: any) => {
         logger.error(err);
       });
   }
 
-  function tryReplaceWithHighresAlbumArt(track) {
+  function tryReplaceWithHighresAlbumArt(this: any, track: any) {
     if (!track.uri) {
       return;
     }
 
     return musicServices.tryGetHighResArt(track.uri)
-      .then((highResAlbumArtUrl) => {
+      .then((highResAlbumArtUrl: any) => {
         track.absoluteAlbumArtUri = highResAlbumArtUrl;
       }).catch(() => {
         if (track.albumArtUri && track.albumArtUri.startsWith('http')) {
@@ -263,7 +263,7 @@ function Player(data, listener, system) {
       });
   }
 
-  function notificationHandler(uuid, data) {
+  function notificationHandler(this: any, uuid: any, data: any) {
     if (uuid !== _this.uuid) {
       // This was not intended for us, skip it.
       return;
@@ -340,7 +340,7 @@ function Player(data, listener, system) {
     }
 
     if (data.mute) {
-      let master = data.mute.find(x => x.channel === 'Master');
+      let master = data.mute.find((x: any) => x.channel === 'Master');
       const previousMute = state.mute;
       state.mute = master.val === '1';
 
@@ -359,7 +359,7 @@ function Player(data, listener, system) {
     }
 
     if (data.volume) {
-      let master = data.volume.find(x => x.channel === 'Master');
+      let master = data.volume.find((x: any) => x.channel === 'Master');
       const previousVolume = state.volume;
       state.volume = parseInt(master.val);
 
@@ -420,7 +420,7 @@ function Player(data, listener, system) {
     }
   }
 
-  function groupMuteHandler(uuid, mute) {
+  function groupMuteHandler(this: any, uuid: any, mute: any) {
     if (uuid !== _this.uuid) {
       // This was not intended for us, skip it.
       return;
@@ -450,68 +450,68 @@ function Player(data, listener, system) {
 
 util.inherits(Player, EventEmitter);
 
-Player.prototype.play = function play() {
+Player.prototype.play = function play(this: any) {
   logger.debug('invoking play');
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.Play);
 };
 
-Player.prototype.pause = function pause() {
+Player.prototype.pause = function pause(this: any) {
   logger.debug('invoking pause');
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.Pause);
 };
 
-Player.prototype.stop = function stop() {
+Player.prototype.stop = function stop(this: any) {
   logger.debug('invoking stop');
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.Stop);
 };
 
-Player.prototype.nextTrack = function nextTrack() {
+Player.prototype.nextTrack = function nextTrack(this: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.Next);
 };
 
-Player.prototype.previousTrack = function previousTrack() {
+Player.prototype.previousTrack = function previousTrack(this: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.Previous);
 };
 
-Player.prototype.mute = function mute() {
+Player.prototype.mute = function mute(this: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/RenderingControl/Control`,
     TYPE.Mute,
     { mute: 1 });
 };
 
-Player.prototype.unMute = function unMute() {
+Player.prototype.unMute = function unMute(this: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/RenderingControl/Control`,
     TYPE.Mute,
     { mute: 0 });
 };
 
-Player.prototype.unMuteGroup = function unMuteGroup() {
+Player.prototype.unMuteGroup = function unMuteGroup(this: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/GroupRenderingControl/Control`,
     TYPE.GroupMute,
     { mute: 0 });
 };
 
-Player.prototype.muteGroup = function muteGroup() {
+Player.prototype.muteGroup = function muteGroup(this: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/GroupRenderingControl/Control`,
     TYPE.GroupMute,
     { mute: 1 });
 };
 
-Player.prototype.setVolume = function setVolume(level) {
+Player.prototype.setVolume = function setVolume(this: any, level: any) {
   if (this.outputFixed) {
     return Promise.resolve();
   }
@@ -535,21 +535,21 @@ Player.prototype.setVolume = function setVolume(level) {
     { volume: level });
 };
 
-Player.prototype.setBass = function setBass(level) {
+Player.prototype.setBass = function setBass(this: any, level: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/RenderingControl/Control`,
     TYPE.SetBass,
     { level });
 };
 
-Player.prototype.setTreble = function setBass(level) {
+Player.prototype.setTreble = function setBass(this: any, level: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/RenderingControl/Control`,
     TYPE.SetTreble,
     { level });
 };
 
-Player.prototype.timeSeek = function timeSeek(seconds) {
+Player.prototype.timeSeek = function timeSeek(this: any, seconds: any) {
   let formattedTime = formatTime(seconds);
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
@@ -557,27 +557,27 @@ Player.prototype.timeSeek = function timeSeek(seconds) {
     { unit: 'REL_TIME', value: formattedTime });
 };
 
-Player.prototype.trackSeek = function trackSeek(trackNo) {
+Player.prototype.trackSeek = function trackSeek(this: any, trackNo: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.Seek,
     { unit: 'TRACK_NR', value: trackNo });
 };
 
-Player.prototype.clearQueue = function clearQueue() {
+Player.prototype.clearQueue = function clearQueue(this: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.RemoveAllTracksFromQueue);
 };
 
-Player.prototype.removeTrackFromQueue = function removeTrackFromQueue(index) {
+Player.prototype.removeTrackFromQueue = function removeTrackFromQueue(this: any, index: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.RemoveTrackFromQueue,
     { track: index || 0 });
 };
 
-Player.prototype.removeTrackRangeFromQueue = function removeTrackRangeFromQueue(startIndex, numberOfTracks) {
+Player.prototype.removeTrackRangeFromQueue = function removeTrackRangeFromQueue(this: any, startIndex: any, numberOfTracks: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.RemoveTrackRangeFromQueue,
@@ -587,7 +587,7 @@ Player.prototype.removeTrackRangeFromQueue = function removeTrackRangeFromQueue(
     });
 };
 
-Player.prototype.reorderTracksInQueue = function reorderTracksInQueue(startIndex, numberOfTracks, insertBefore) {
+Player.prototype.reorderTracksInQueue = function reorderTracksInQueue(this: any, startIndex: any, numberOfTracks: any, insertBefore: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.ReorderTracksInQueue,
@@ -598,7 +598,7 @@ Player.prototype.reorderTracksInQueue = function reorderTracksInQueue(startIndex
     });
 };
 
-Player.prototype.saveQueue = function saveQueue(title) {
+Player.prototype.saveQueue = function saveQueue(this: any, title: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.SaveQueue,
@@ -607,7 +607,7 @@ Player.prototype.saveQueue = function saveQueue(title) {
     });
 };
 
-Player.prototype.addURIToQueue = function addURIToQueue(uri, metadata, enqueueAsNext, desiredFirstTrackNumberEnqueued) {
+Player.prototype.addURIToQueue = function addURIToQueue(this: any, uri: any, metadata: any, enqueueAsNext: any, desiredFirstTrackNumberEnqueued: any) {
   desiredFirstTrackNumberEnqueued =
     desiredFirstTrackNumberEnqueued === undefined
       ? 0
@@ -633,14 +633,14 @@ Player.prototype.addURIToQueue = function addURIToQueue(uri, metadata, enqueueAs
     }).then(soap.parse);
 };
 
-Player.prototype.addMultipleURIsToQueue = function addMultipleURIsToQueue(elements, containerURI, containerMetadata, enqueueAsNext, desiredFirstTrackNumberEnqueued) {
+Player.prototype.addMultipleURIsToQueue = function addMultipleURIsToQueue(this: any, elements: any, containerURI: any, containerMetadata: any, enqueueAsNext: any, desiredFirstTrackNumberEnqueued: any) {
   desiredFirstTrackNumberEnqueued = desiredFirstTrackNumberEnqueued === undefined ? 0 : desiredFirstTrackNumberEnqueued;
   enqueueAsNext = enqueueAsNext ? 1 : 0;
 
-  let uris = [];
-  let metadatas = [];
+  const uris: any[] = [];
+  const metadatas: any[] = [];
 
-  elements.forEach(element => {
+  elements.forEach((element: any) => {
     uris.push(xmlEntities.encode(element[0]));
     metadatas.push(xmlEntities.encode(element[1] || ''));
   });
@@ -666,7 +666,7 @@ Player.prototype.addMultipleURIsToQueue = function addMultipleURIsToQueue(elemen
     }).then(soap.parse);
 };
 
-Player.prototype.setPlayMode = function setPlayMode(newPlayMode) {
+Player.prototype.setPlayMode = function setPlayMode(this: any, newPlayMode: any) {
   let promise = Promise.resolve();
 
   if (newPlayMode.repeat !== undefined || newPlayMode.shuffle !== undefined) {
@@ -680,7 +680,7 @@ Player.prototype.setPlayMode = function setPlayMode(newPlayMode) {
         `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
         TYPE.SetPlayMode,
         { playMode })
-        .catch((err) => {
+        .catch((err: any) => {
           logger.warn(err, `Failed when trying to set playmode ${playMode}, could be playing radiostation or line-in, no worries.`);
         });
     });
@@ -698,23 +698,23 @@ Player.prototype.setPlayMode = function setPlayMode(newPlayMode) {
   return promise;
 };
 
-Player.prototype.repeat = function repeat(mode) {
+Player.prototype.repeat = function repeat(this: any, mode: any) {
   let repeatMode = mode;
   if (typeof mode === 'boolean') repeatMode = mode ? REPEAT_MODE.ALL : REPEAT_MODE.NONE;
 
   return this.setPlayMode({ repeat: repeatMode });
 };
 
-Player.prototype.shuffle = function shuffle(enabled) {
+Player.prototype.shuffle = function shuffle(this: any, enabled: any) {
   return this.setPlayMode({ shuffle: Boolean(enabled) });
 };
 
-Player.prototype.crossfade = function crossfade(enabled) {
+Player.prototype.crossfade = function crossfade(this: any, enabled: any) {
   logger.debug(`Setting crossfade to ${enabled}`);
   return this.setPlayMode({ crossfade: Boolean(enabled) });
 };
 
-Player.prototype.sleep = function sleep(seconds) {
+Player.prototype.sleep = function sleep(this: any, seconds: any) {
   let formattedTime = '';
   if (seconds != 0) {
     formattedTime = formatTime(seconds);
@@ -726,7 +726,7 @@ Player.prototype.sleep = function sleep(seconds) {
     { time: formattedTime });
 };
 
-Player.prototype.setAVTransport = function setAVTransport(uri, metadata) {
+Player.prototype.setAVTransport = function setAVTransport(this: any, uri: any, metadata: any) {
   if (metadata === undefined) {
     metadata = '';
   }
@@ -743,19 +743,19 @@ Player.prototype.setAVTransport = function setAVTransport(uri, metadata) {
     });
 };
 
-Player.prototype.becomeCoordinatorOfStandaloneGroup = function becomeCoordinatorOfStandaloneGroup() {
+Player.prototype.becomeCoordinatorOfStandaloneGroup = function becomeCoordinatorOfStandaloneGroup(this: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaRenderer/AVTransport/Control`,
     TYPE.BecomeCoordinatorOfStandaloneGroup);
 };
 
-Player.prototype.refreshShareIndex = function refreshShareIndex() {
+Player.prototype.refreshShareIndex = function refreshShareIndex(this: any) {
   return soap.invoke(
     `${this.baseUrl}/MediaServer/ContentDirectory/Control`,
     TYPE.RefreshShareIndex);
 };
 
-Player.prototype.browse = function browse(objectId, startIndex, limit) {
+Player.prototype.browse = function browse(this: any, objectId: any, startIndex: any, limit: any) {
   startIndex = startIndex === undefined ? 0 : startIndex;
   limit = limit === undefined ? 0 : limit;
   return soap.invoke(
@@ -763,8 +763,8 @@ Player.prototype.browse = function browse(objectId, startIndex, limit) {
     TYPE.Browse,
     { objectId, startIndex, limit })
     .then(soap.parse)
-    .then(res => {
-      return new Promise((resolve, reject) => {
+    .then((res: any) => {
+      return new Promise((resolve: any, reject: any) => {
         const returnResult: any = {
           startIndex,
           items: []
@@ -776,7 +776,7 @@ Player.prototype.browse = function browse(objectId, startIndex, limit) {
         let stream = streamer(res.result);
         let sax = flow(stream, { preserveMarkup: flow.NEVER });
 
-        sax.on('tag:item', (item) => {
+        sax.on('tag:item', (item: any) => {
           returnResult.items.push({
             uri: item.res ? item.res.$text : '',
             title: item['dc:title'],
@@ -790,7 +790,7 @@ Player.prototype.browse = function browse(objectId, startIndex, limit) {
           });
         });
 
-        sax.on('tag:container', (item) => {
+        sax.on('tag:container', (item: any) => {
 
           returnResult.items.push({
             uri: item.res.$text,
@@ -804,14 +804,14 @@ Player.prototype.browse = function browse(objectId, startIndex, limit) {
           resolve(returnResult);
         });
 
-        sax.on('error', (error) => {
+        sax.on('error', (error: any) => {
           reject(error);
         });
       });
     });
 };
 
-Player.prototype.browseAll = function browseAll(objectId) {
+Player.prototype.browseAll = function browseAll(this: any, objectId: any) {
   let result = {
     items: [],
     startIndex: 0,
@@ -819,7 +819,7 @@ Player.prototype.browseAll = function browseAll(objectId) {
     totalMatches: 1
   };
 
-  let getChunk = (chunk) => {
+  let getChunk = (chunk: any) => {
     if (!chunk || !Array.isArray(chunk.items) || isNaN(chunk.totalMatches)) {
       // something went wrong. prevent infinite loop
       return Promise.reject(new Error('browse() returned an invalid payload'));
@@ -842,7 +842,7 @@ Player.prototype.browseAll = function browseAll(objectId) {
     .then(getChunk);
 };
 
-Player.prototype.getQueue = function getQueue(limit, offset) {
+Player.prototype.getQueue = function getQueue(this: any, limit: any, offset: any) {
   const queueIdentifier = 'Q:0';
   limit = limit || 0;
   offset = offset || 0;
@@ -852,10 +852,10 @@ Player.prototype.getQueue = function getQueue(limit, offset) {
   }
 
   return this.browse(queueIdentifier, offset, limit)
-    .then(result => result.items);
+    .then((result: any) => result.items);
 };
 
-Player.prototype.toJSON = function toJSON() {
+Player.prototype.toJSON = function toJSON(this: any) {
   return {
     uuid: this.uuid,
     coordinator: this.coordinator.uuid,
@@ -867,7 +867,7 @@ Player.prototype.toJSON = function toJSON() {
   };
 };
 
-requireDir(path.join(__dirname, '../prototypes/Player'), (proto) => {
+requireDir(path.join(__dirname, '../prototypes/Player'), (proto: any) => {
   Player.prototype[proto.name] = proto;
 });
 
